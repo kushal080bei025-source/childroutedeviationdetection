@@ -1,95 +1,117 @@
-# Route Deviation Detection System
+# Route Deviation Detection System 🚸
 
-An IoT-based child safety and location monitoring system designed to track a child's real-time location and detect deviations from a predefined route.
+An IoT-based child safety system that provides **real-time location tracking and route deviation detection** using GPS, GSM, ESP32, and a mobile application.
 
-The system combines **ESP32, NEO-6M GPS, SIM800L GSM, MPU6050, Node.js/Express, MongoDB, Firebase, and React Native** to provide real-time tracking and safety notifications.
+The system is designed to help parents or guardians monitor a child's location and identify when the child moves away from a predefined route.
 
-## 👥 Team Members
+---
 
-| Member                | GitHub                                                               |
-| --------------------- | -------------------------------------------------------------------- |
-| **Kushal Bhatta**     | [@kushal080bei025-source](https://github.com/kushal080bei025-source) |
-| **Musnit Ijam Limbu** | [@Musnit-Ijam](https://github.com/Musnit-Ijam)                       |
-| **Nabin Pokharel**    | [@Nabin080bei027-eng](https://github.com/Nabin080bei027-eng)         |
+## 👥 Team
 
-## 📌 Project Overview
+### Kushal Bhatta
 
-The Route Deviation Detection System is developed to improve child safety by allowing parents or guardians to monitor a child's location remotely.
+GitHub: [kushal080bei025-source](https://github.com/kushal080bei025-source)
 
-A GPS-enabled hardware device carried by the child collects location data and sends it to the backend server. The mobile application displays the child's live location and compares the current position with a predefined route.
+### Musnit Ijam Limbu
 
-If the child moves significantly away from the expected route, the system can identify the deviation and notify the responsible user.
+GitHub: [Musnit-Ijam](https://github.com/Musnit-Ijam)
 
-## 🎯 Objectives
+### Nabin Pokharel
 
-* Track the child's real-time geographical location.
-* Display the child's location on a mobile application.
-* Define and monitor a predefined route.
-* Detect deviations from the expected route.
-* Provide emergency/SOS functionality.
-* Support fall detection using the MPU6050.
-* Send location and emergency information to the backend.
-* Store relevant user and tracking information securely.
+GitHub: [Nabin080bei027-eng](https://github.com/Nabin080bei027-eng)
+
+---
+
+## 📌 About the Project
+
+The **Route Deviation Detection System** combines an embedded tracking device, backend server, database, and mobile application.
+
+The tracking device collects GPS coordinates using the **NEO-6M GPS module** and processes the location data using an **ESP32**. The processed location is transmitted to the backend server through network connectivity.
+
+The mobile application displays the child's live location and provides route monitoring. If the child moves away from the predefined route, the system can detect the deviation and provide an alert.
+
+---
+
+## ✨ Features
+
+* 📍 Real-time child location tracking
+* 🛣️ Predefined route monitoring
+* 🚸 Route deviation detection
+* 🆘 SOS emergency alert
+* 📱 Mobile application for monitoring
+* 📡 GSM/GPRS communication
+* 🛰️ GPS-based positioning
+* 📳 Firebase notifications
+* 🧭 Motion/fall detection using MPU6050
+* 🔐 User authentication
+* ☁️ Cloud-based backend
+
+---
 
 ## 🏗️ System Architecture
 
 ```text
-                 ┌─────────────────────┐
-                 │       NEO-6M        │
-                 │      GPS Module     │
-                 └──────────┬──────────┘
-                            │
-                            ▼
-                 ┌─────────────────────┐
-                 │        ESP32        │
-                 │  Main Controller    │
-                 └──────┬─────┬────────┘
-                        │     │
-              ┌─────────┘     └─────────┐
-              ▼                         ▼
-       ┌─────────────┐          ┌─────────────┐
-       │   MPU6050   │          │   SIM800L   │
-       │ Fall/Motion │          │ GSM/GPRS    │
-       │  Detection  │          │ Communication│
-       └─────────────┘          └──────┬──────┘
-                                       │
-                                       ▼
-                              ┌─────────────────┐
-                              │ Node.js/Express │
-                              │    Backend      │
-                              └────────┬────────┘
-                                       │
-                         ┌─────────────┴─────────────┐
-                         ▼                           ▼
-                  ┌─────────────┐             ┌─────────────┐
-                  │   MongoDB   │             │   Firebase  │
-                  │   Database  │             │ Notifications│
-                  └─────────────┘             └─────────────┘
-                         │
-                         ▼
-                  ┌─────────────────┐
-                  │ React Native App│
-                  │  Live Tracking  │
-                  └─────────────────┘
+                  ┌───────────────┐
+                  │    NEO-6M     │
+                  │      GPS      │
+                  └───────┬───────┘
+                          │
+                          ▼
+                  ┌───────────────┐
+                  │     ESP32     │
+                  │ Microcontroller│
+                  └───────┬───────┘
+                          │
+             ┌────────────┼────────────┐
+             │            │            │
+             ▼            ▼            ▼
+        ┌─────────┐  ┌─────────┐  ┌─────────┐
+        │ SIM800L │  │ MPU6050 │  │ SOS Btn │
+        │  GSM    │  │ Motion  │  │         │
+        └────┬────┘  └─────────┘  └─────────┘
+             │
+             │ Internet
+             ▼
+       ┌─────────────────┐
+       │ Node.js/Express │
+       │     Backend     │
+       └────────┬────────┘
+                │
+         ┌──────┴──────┐
+         ▼             ▼
+    ┌─────────┐   ┌──────────┐
+    │ MongoDB │   │ Firebase │
+    └─────────┘   └──────────┘
+         │
+         ▼
+   ┌─────────────────┐
+   │  React Native   │
+   │  Mobile App     │
+   └─────────────────┘
 ```
 
-## 🔧 Hardware Components
+---
 
-* **ESP32** – Main microcontroller
-* **NEO-6M GPS** – Provides geographical coordinates
-* **SIM800L** – GSM/GPRS communication
-* **MPU6050** – Accelerometer and gyroscope for motion/fall detection
-* **Li-Po Battery** – Portable power source
-* **TP4056** – Battery charging module
-* Push button – SOS/emergency input
-* LEDs and supporting electronic components
+## 🔧 Hardware
+
+| Component         | Purpose                   |
+| ----------------- | ------------------------- |
+| **ESP32**         | Main microcontroller      |
+| **NEO-6M**        | GPS location acquisition  |
+| **SIM800L**       | GSM/GPRS communication    |
+| **MPU6050**       | Motion and fall detection |
+| **Push Button**   | SOS emergency trigger     |
+| **Li-Po Battery** | Power supply              |
+| **TP4056**        | Battery charging          |
+
+---
 
 ## 💻 Software & Technologies
 
 ### Embedded System
 
-* Arduino IDE
 * C/C++
+* Arduino IDE
 * ESP32
 * TinyGPS++
 * TinyGSM
@@ -119,104 +141,135 @@ If the child moves significantly away from the expected route, the system can id
 * Render
 * MongoDB Atlas
 
-## 📍 GPS Data Processing
+---
 
-The GPS data received from the NEO-6M module goes through several processing stages before being transmitted to the backend.
+## 🛰️ GPS Data Processing
+
+GPS data received from the NEO-6M goes through multiple processing stages:
 
 ```text
-NEO-6M GPS
-    │
-    ▼
+NEO-6M
+  │
+  ▼
 NMEA Data
-    │
-    ▼
+  │
+  ▼
 GPS Quality Validation
-    │
-    ▼
+  │
+  ▼
 Outlier Detection
-    │
-    ▼
-Moving Average Filtering
-    │
-    ▼
-Validated Location
-    │
-    ▼
+  │
+  ▼
+Moving Average Filter
+  │
+  ▼
+Validated Latitude & Longitude
+  │
+  ▼
 Backend Server
-    │
-    ▼
+  │
+  ▼
 Mobile Application
 ```
 
-These processing steps help reduce inaccurate GPS readings and improve the stability of the displayed location.
+This processing helps reduce inaccurate GPS readings and provides more stable location information.
 
-## 🚨 Safety Features
+---
 
-### Route Deviation Detection
+## 🆘 Emergency System
 
-The system uses a predefined route between locations such as home and school/playground. The child's current GPS position is compared against the expected route to identify potential deviations.
+The device includes an SOS button that can be used to trigger an emergency event.
 
-### SOS Alert
+When an SOS event is triggered, the system can transmit relevant information such as:
 
-An emergency button allows the child to trigger an SOS event. The system can transmit the emergency information, including the child's location, to the backend and notify the responsible user.
+* Child/device identification
+* Current GPS location
+* Emergency status
 
-### Fall Detection
+The backend can then process the event and provide a notification to the monitoring application.
 
-The MPU6050 provides acceleration and gyroscope data that can be processed to identify abnormal motion patterns associated with a possible fall.
+---
 
-### Live Location Tracking
+## 🧭 Route Deviation Detection
 
-The mobile application receives location information from the backend and displays the child's current position on a map.
+A predefined route is created between selected locations.
 
-## 📱 Application
+The system continuously compares the child's current GPS position with the expected route.
 
-The mobile application provides functionality such as:
+```text
+       Predefined Route
+Home ───────────────────────► School
+             ▲
+             │
+             │ Expected path
+             │
+          Child ●
+             │
+             │
+             ▼
+       Possible deviation
+```
 
-* User authentication
-* Child registration
-* Live child location
+If the child's position moves beyond the acceptable route boundary, the system identifies a possible route deviation.
+
+---
+
+## 📱 Mobile Application
+
+The mobile application provides:
+
+* User login and authentication
+* Child information
+* Live location tracking
 * Route visualization
 * Route deviation monitoring
 * Emergency notifications
-* Map-based location tracking
+* Map-based monitoring
+
+The map interface uses **OpenStreetMap** data displayed through Leaflet.
+
+---
+
+## ☁️ Backend
+
+The backend is developed using **Node.js and Express.js**.
+
+It handles:
+
+* User authentication
+* Child/device information
+* GPS location updates
+* Route information
+* Location storage
+* Route deviation processing
+* Emergency events
+* Firebase notifications
+
+The backend can be deployed using **Render**, while MongoDB can be hosted using **MongoDB Atlas**.
+
+---
 
 ## 🔐 Firebase Configuration
 
 Firebase Admin SDK is used for backend services such as notifications.
 
-The Firebase service-account key **must not be committed to GitHub**.
+The Firebase service-account key must **not** be uploaded to GitHub.
 
-For local development, the project can use:
+For local development:
 
 ```text
 serviceAccountKey.json
 ```
 
-For production deployment, such as Render, the Firebase credentials should be stored as an environment variable:
+can be used.
+
+For production deployment on Render, Firebase credentials can be stored as:
 
 ```text
 FIREBASE_SERVICE_ACCOUNT
 ```
 
-The service-account JSON should never be exposed publicly.
-
-## ⚙️ Environment Variables
-
-Create a `.env` file for local development.
-
-Example:
-
-```env
-PORT=3000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-SESSION_SECRET=your_session_secret
-FIREBASE_SERVICE_ACCOUNT=your_firebase_service_account_json
-```
-
-Do not commit `.env` to the repository.
-
-Add the following to `.gitignore`:
+The credential file should also be included in `.gitignore`:
 
 ```gitignore
 node_modules/
@@ -224,84 +277,19 @@ node_modules/
 serviceAccountKey.json
 ```
 
-## 🚀 Backend Setup
+---
 
-Clone the repository:
-
-```bash
-git clone <repository-url>
-```
-
-Navigate to the backend directory:
-
-```bash
-cd backend
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Configure the required environment variables.
-
-Start the development server:
-
-```bash
-npm run dev
-```
-
-Or start the production server:
-
-```bash
-npm start
-```
-
-The backend should then be available at:
-
-```text
-http://localhost:3000
-```
-
-## 📱 Mobile Application Setup
-
-Install the project dependencies:
-
-```bash
-npm install
-```
-
-Start the Expo development server:
-
-```bash
-npx expo start
-```
-
-The application can then be tested using Expo Go or an appropriate emulator.
-
-## 🔌 ESP32 Setup
-
-1. Install Arduino IDE.
-2. Install ESP32 board support.
-3. Install the required libraries.
-4. Connect the ESP32.
-5. Configure the GPS and GSM serial pins.
-6. Configure the backend server address.
-7. Upload the firmware.
-8. Monitor the serial output for GPS and network status.
-
-## 📂 Suggested Repository Structure
+## 📂 Repository Structure
 
 ```text
 Route-Deviation-Detection/
 │
 ├── backend/
-│   ├── server.js
 │   ├── routes/
 │   ├── models/
 │   ├── middleware/
 │   ├── firebase.js
+│   ├── server.js
 │   └── package.json
 │
 ├── mobile/
@@ -321,46 +309,30 @@ Route-Deviation-Detection/
 └── README.md
 ```
 
-## 🔄 Overall Data Flow
+---
 
-```text
-Child Device
-     │
-     │ GPS Location
-     ▼
-   ESP32
-     │
-     │ GSM/GPRS / Internet
-     ▼
- Express Backend
-     │
-     ├──────────────► MongoDB
-     │
-     ├──────────────► Firebase
-     │
-     ▼
- React Native App
-     │
-     ▼
-Live Location + Route Monitoring
-```
+## 🚀 Future Improvements
 
-## 🔮 Future Improvements
-
-* Improved GPS filtering using Extended Kalman Filter (EKF)
+* Extended Kalman Filter (EKF) for improved GPS accuracy
 * More accurate route deviation detection
 * Geofencing
-* Improved battery optimization
-* Offline location storage
-* Better emergency notification handling
-* Additional wearable-device integration
-* Improved security and authentication
-* More robust GSM/network failure handling
+* Battery optimization
+* Offline data storage
+* Improved GSM connectivity handling
+* Enhanced notification system
+* Improved device security
+* Compact wearable hardware design
 
-## 📜 License
+---
 
-This project was developed as an academic project by:
+## 🎓 Academic Project
+
+This project is developed as an academic project by:
 
 **Kushal Bhatta · Musnit Ijam Limbu · Nabin Pokharel**
 
-All rights reserved unless otherwise specified.
+---
+
+## 📜 License
+
+This project is intended for educational and academic purposes.
