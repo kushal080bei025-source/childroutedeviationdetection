@@ -15,6 +15,8 @@ const authMiddleware = require("./middleware/authenticate");
 const BaseMiddleware = require("./middleware/baseMiddleware");
 const upload = require("./middleware/upload");
 
+const PORT = process.env.PORT || 3000;
+
 const {
   login,
   register,
@@ -263,7 +265,8 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected");
-    server.listen(PORT, () => {
+
+    server.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
     });
   })
