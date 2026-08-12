@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
 const User = require("../../db/User");
 
 // @desc    Get all users
@@ -121,6 +122,67 @@ router.put("/:id", async (req, res) => {
     res
       .status(400)
       .json({ message: "Error updating user", error: error.message });
+  }
+});
+
+// @desc    Change a user's password by email (dev/testing only)
+// @route   POST /api/users/ChangePassword
+router.post("/ChangePassword", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "email and newPassword are required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// @desc    Change the logged-in user's own password
+// @route   POST /api/users/change-password
+router.post("/change-password", async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "currentPassword and newPassword are required" });
+    }
+
+    const user = req.dbUser;
+    if (!user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    if (user.authProvider !== "local") {
+      return res.status(400).json({
+        message: "Password change is only available for local accounts",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
