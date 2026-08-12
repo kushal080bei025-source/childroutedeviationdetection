@@ -10,15 +10,15 @@ The system is designed to help parents or guardians monitor a child's location a
 
 ### Kushal Bhatta
 
-GitHub: [kushal080bei025-source](https://github.com/kushal080bei025-source)
+GitHub: [kushal Bhatta](https://github.com/kushal080bei025-source)
 
 ### Musnit Ijam Limbu
 
-GitHub: [Musnit-Ijam](https://github.com/Musnit-Ijam)
+GitHub: [Musnit Ijam Limbu](https://github.com/Musnit-Ijam)
 
 ### Nabin Pokharel
 
-GitHub: [Nabin080bei027-eng](https://github.com/Nabin080bei027-eng)
+GitHub: [Nabin Pokharel](https://github.com/Nabin080bei027-eng)
 
 ---
 
