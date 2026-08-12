@@ -129,6 +129,7 @@ router.put("/:id", async (req, res) => {
 // @route   POST /api/users/ChangePassword
 router.post("/ChangePassword", async (req, res) => {
   try {
+    console.log("ChangePassword request body:", req.body);
     const { email, newPassword } = req.body;
     if (!email || !newPassword) {
       return res
