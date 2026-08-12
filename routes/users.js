@@ -1,5 +1,5 @@
 const express = require("express");
-const User = require("../db/user.js");
+const User = require("../db/User.js");
 const EmergencyContact = require("../db/contacts.js");
 const bcrypt = require("bcryptjs");
 const fs = require("fs");

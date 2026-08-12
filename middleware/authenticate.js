@@ -8,7 +8,6 @@ const authMiddleware = async (req, res, next) => {
     if (!req.headers.origin) {
       return await React_Native_Request(req, res, next);
     }
-    console.log("middleware");
     if (!req.headers.origin && process.env.IS_WEP_NATIVE_TESTING) {
       const users = await User.find();
       const user = users[0];

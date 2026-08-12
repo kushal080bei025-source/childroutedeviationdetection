@@ -1,5 +1,5 @@
-const admin = require("../firebase");
-const User = require("../db/user.js");
+const admin = require("../config/firebase");
+const User = require("../db/User.js");
 const Notification = require("../db/notifications.js");
 
 /**

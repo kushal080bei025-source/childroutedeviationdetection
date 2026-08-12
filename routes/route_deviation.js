@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { RouteEncoder, RouteDecoder } = require("../EncoderDecoder/main");
 const Device = require("../db/deviceinfo.js");
-const User = require("../db/user.js");
+const User = require("../db/User.js");
 const Route = require("../db/routes.js");
 const UserCurrentDevice = require("../db/user_current_device.js");
 

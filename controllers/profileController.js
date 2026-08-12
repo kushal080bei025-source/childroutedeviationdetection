@@ -1,5 +1,5 @@
 // routes/user.routes.js
-const User = require("../db/User");
+const User = require("../db/User.js");
 const { ParseUser } = require("../parsers/user");
 const Device = require("../db/deviceinfo.js");
 const UserCurrentDevice = require("../db/user_current_device.js");
