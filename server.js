@@ -15,7 +15,6 @@ const authMiddleware = require("./middleware/authenticate");
 const BaseMiddleware = require("./middleware/baseMiddleware");
 const upload = require("./middleware/upload");
 
-const PORT = process.env.PORT || 3000;
 
 const {
   login,
