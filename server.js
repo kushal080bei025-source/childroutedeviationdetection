@@ -10,6 +10,8 @@ const session = require("express-session");
 const { MongoStore } = require("connect-mongo");
 const { Server } = require("socket.io");
 
+require("./mqtt");
+
 const verifyUser = require("./middleware/auth");
 const authMiddleware = require("./middleware/authenticate");
 const BaseMiddleware = require("./middleware/baseMiddleware");
