@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RouteGuard • Socket Monitor</title>
+
+    <!-- Socket.IO browser client -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
+    <style>
+      :root {
+        --bg: #070b14;
+        --panel: rgba(17, 24, 39, 0.72);
+        --panel-2: rgba(15, 23, 42, 0.9);
+        --border: rgba(148, 163, 184, 0.15);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --green: #22c55e;
+        --red: #ef4444;
+        --blue: #38bdf8;
+        --purple: #a78bfa;
+        --orange: #f59e0b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background:
+          radial-gradient(
+            circle at 15% 15%,
+            rgba(56, 189, 248, 0.12),
+            transparent 28%
+          ),
+          radial-gradient(
+            circle at 85% 20%,
+            rgba(167, 139, 250, 0.12),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at 50% 100%,
+            rgba(34, 197, 94, 0.07),
+            transparent 35%
+          ),
+          var(--bg);
+      }
+
+      .shell {
+        width: min(1450px, 94%);
+        margin: 0 auto;
+        padding: 28px 0 40px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+        display: grid;
+        place-items: center;
+        font-size: 23px;
+        background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+        box-shadow: 0 0 35px rgba(56, 189, 248, 0.22);
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 21px;
+        letter-spacing: -0.5px;
+      }
+
+      .brand p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .connection {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(14px);
+        font-size: 13px;
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--red);
+        box-shadow: 0 0 13px rgba(239, 68, 68, 0.7);
+      }
+
+      .dot.connected {
+        background: var(--green);
+        box-shadow: 0 0 13px rgba(34, 197, 94, 0.8);
+      }
+
+      .hero {
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 28px;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(15, 23, 42, 0.92),
+            rgba(17, 24, 39, 0.72)
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(56, 189, 248, 0.12),
+            transparent 30%
+          );
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(20px);
+        margin-bottom: 20px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 25px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        color: var(--blue);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .hero h2 {
+        margin: 9px 0;
+        font-size: clamp(30px, 5vw, 54px);
+        line-height: 1;
+        letter-spacing: -2px;
+      }
+
+      .hero h2 span {
+        background: linear-gradient(90deg, #38bdf8, #a78bfa, #22c55e);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero p {
+        max-width: 720px;
+        color: var(--muted);
+        line-height: 1.65;
+        margin: 14px 0 0;
+      }
+
+      .server-box {
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 19px;
+        background: rgba(2, 6, 23, 0.48);
+      }
+
+      .server-box label {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .server-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 11px;
+        background: rgba(15, 23, 42, 0.8);
+        color: var(--text);
+        padding: 12px;
+        outline: none;
+      }
+
+      input:focus {
+        border-color: rgba(56, 189, 248, 0.6);
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08);
+      }
+
+      button {
+        border: 0;
+        border-radius: 11px;
+        padding: 11px 16px;
+        color: white;
+        cursor: pointer;
+        font-weight: 700;
+        transition: 0.2s;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+      .primary {
+        background: linear-gradient(135deg, #0284c7, #7c3aed);
+      }
+      .danger {
+        background: rgba(239, 68, 68, 0.14);
+        color: #fca5a5;
+      }
+      .secondary {
+        background: rgba(148, 163, 184, 0.1);
+        color: #cbd5e1;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .stat {
+        border: 1px solid var(--border);
+        background: var(--panel);
+        border-radius: 19px;
+        padding: 19px;
+        backdrop-filter: blur(15px);
+      }
+
+      .stat-top {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .stat-value {
+        font-size: 29px;
+        font-weight: 800;
+        margin-top: 10px;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1.6fr 0.8fr;
+        gap: 20px;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        background: var(--panel);
+        backdrop-filter: blur(16px);
+        overflow: hidden;
+      }
+
+      .panel-head {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+      }
+
+      .panel-title {
+        font-weight: 800;
+        font-size: 15px;
+      }
+
+      .panel-subtitle {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 3px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+      }
+
+      .messages {
+        height: 540px;
+        overflow: auto;
+        padding: 14px;
+      }
+
+      .empty {
+        height: 100%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        color: var(--muted);
+        padding: 30px;
+      }
+
+      .empty-icon {
+        font-size: 42px;
+        opacity: 0.7;
+        margin-bottom: 10px;
+      }
+
+      .message {
+        position: relative;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 15px;
+        background: rgba(2, 6, 23, 0.42);
+        padding: 14px;
+        margin-bottom: 10px;
+        animation: slide 0.25s ease;
+      }
+
+      @keyframes slide {
+        from {
+          opacity: 0;
+          transform: translateY(7px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 9px;
+      }
+
+      .event-name {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #7dd3fc;
+        font-size: 12px;
+        font-weight: 800;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .event-name::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        background: var(--green);
+        border-radius: 50%;
+        box-shadow: 0 0 9px rgba(34, 197, 94, 0.8);
+      }
+
+      .time {
+        color: #64748b;
+        font-size: 10px;
+      }
+
+      pre {
+        margin: 0;
+        color: #cbd5e1;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .side {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .events {
+        padding: 12px;
+        max-height: 260px;
+        overflow: auto;
+      }
+
+      .event-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 11px 9px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+        font-size: 12px;
+      }
+
+      .event-row:last-child {
+        border-bottom: 0;
+      }
+
+      .event-count {
+        color: var(--blue);
+        font-weight: 800;
+      }
+
+      .terminal {
+        height: 230px;
+        overflow: auto;
+        padding: 15px;
+        background: #020617;
+        color: #94a3b8;
+        font:
+          11px/1.7 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+
+      .log-green {
+        color: #86efac;
+      }
+      .log-blue {
+        color: #7dd3fc;
+      }
+      .log-red {
+        color: #fca5a5;
+      }
+
+      .footer {
+        text-align: center;
+        color: #475569;
+        font-size: 11px;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 950px) {
+        .hero-grid,
+        .content {
+          grid-template-columns: 1fr;
+        }
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 550px) {
+        .shell {
+          width: 92%;
+        }
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .stats {
+          grid-template-columns: 1fr;
+        }
+        .server-row {
+          flex-direction: column;
+        }
+        .hero {
+          padding: 21px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="logo">🛰️</div>
+          <div>
+            <h1>RouteGuard</h1>
+            <p>Route Deviation Detection • Socket Monitor</p>
+          </div>
+        </div>
+
+        <div class="connection">
+          <span id="statusDot" class="dot"></span>
+          <span id="statusText">Disconnected</span>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow">Real-time backend monitor</div>
+            <h2>Live <span>Socket</span> Intelligence</h2>
+            <p>
+              A dedicated testing dashboard for your Route Deviation Detection
+              backend. Every Socket.IO event received from your ESP32/backend
+              connection appears here instantly.
+            </p>
+          </div>
+
+          <div class="server-box">
+            <label>Socket.IO backend URL</label>
+            <div class="server-row">
+              <input
+                id="serverUrl"
+                placeholder="https://your-backend.onrender.com"
+              />
+              <button class="primary" onclick="connectSocket()">Connect</button>
+            </div>
+            <div style="margin-top: 10px; color: #64748b; font-size: 11px">
+              Leave empty when this dashboard is served by the same backend.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat">
+          <div class="stat-top"><span>Connection</span><span>●</span></div>
+          <div class="stat-value" id="connectionValue">OFF</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-top"><span>Messages</span><span>↗</span></div>
+          <div class="stat-value" id="messageCount">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-top"><span>Events</span><span>◈</span></div>
+          <div class="stat-value" id="eventCount">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-top"><span>Last Message</span><span>◷</span></div>
+          <div class="stat-value" id="lastTime" style="font-size: 18px">—</div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Incoming Messages</div>
+              <div class="panel-subtitle">
+                All Socket.IO events captured by the dashboard
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <button class="secondary" onclick="togglePause()" id="pauseBtn">
+                Pause
+              </button>
+              <button class="danger" onclick="clearMessages()">Clear</button>
+            </div>
+          </div>
+
+          <div id="messages" class="messages">
+            <div class="empty" id="emptyState">
+              <div>
+                <div class="empty-icon">📡</div>
+                <strong>Waiting for socket messages</strong>
+                <div style="margin-top: 7px; font-size: 12px">
+                  Connect to your backend and send a Socket.IO event.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Event Activity</div>
+                <div class="panel-subtitle">
+                  Events received during this session
+                </div>
+              </div>
+            </div>
+            <div id="events" class="events">
+              <div style="padding: 15px; color: #64748b; font-size: 12px">
+                No events yet.
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Socket Terminal</div>
+                <div class="panel-subtitle">Connection diagnostics</div>
+              </div>
+            </div>
+            <div id="terminal" class="terminal"></div>
+          </div>
+        </aside>
+      </section>
+
+      <div class="footer">
+        RouteGuard • Real-time Socket.IO testing dashboard
+      </div>
+    </main>
+
+    <script>
+      let socket = null;
+      let paused = false;
+      let totalMessages = 0;
+      let eventTypes = {};
+      let messageQueue = [];
+
+      const $ = (id) => document.getElementById(id);
+
+      function log(text, type = "") {
+        const terminal = $("terminal");
+        const time = new Date().toLocaleTimeString();
+        const line = document.createElement("div");
+        line.className = type ? "log-" + type : "";
+        line.textContent = `[${time}] ${text}`;
+        terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+      }
+
+      function setConnection(connected, text) {
+        $("statusDot").classList.toggle("connected", connected);
+        $("statusText").textContent = text;
+        $("connectionValue").textContent = connected ? "LIVE" : "OFF";
+      }
+
+      function formatData(data) {
+        try {
+          if (typeof data === "string") {
+            try {
+              return JSON.stringify(JSON.parse(data), null, 2);
+            } catch {
+              return data;
+            }
+          }
+          return JSON.stringify(data, null, 2);
+        } catch {
+          return String(data);
+        }
+      }
+
+      function addMessage(eventName, data) {
+        if (paused) {
+          messageQueue.push({ eventName, data });
+          return;
+        }
+
+        $("emptyState")?.remove();
+
+        totalMessages++;
+        eventTypes[eventName] = (eventTypes[eventName] || 0) + 1;
+
+        $("messageCount").textContent = totalMessages;
+        $("eventCount").textContent = Object.keys(eventTypes).length;
+        $("lastTime").textContent = new Date().toLocaleTimeString();
+
+        const card = document.createElement("div");
+        card.className = "message";
+
+        const head = document.createElement("div");
+        head.className = "message-head";
+
+        const event = document.createElement("div");
+        event.className = "event-name";
+        event.textContent = eventName;
+
+        const time = document.createElement("div");
+        time.className = "time";
+        time.textContent = new Date().toLocaleTimeString();
+
+        head.appendChild(event);
+        head.appendChild(time);
+
+        const pre = document.createElement("pre");
+        pre.textContent = formatData(data);
+
+        card.appendChild(head);
+        card.appendChild(pre);
+
+        const container = $("messages");
+        container.prepend(card);
+
+        // Keep the UI responsive even during heavy testing.
+        while (container.children.length > 101) {
+          container.removeChild(container.lastChild);
+        }
+
+        renderEvents();
+      }
+
+      function renderEvents() {
+        const box = $("events");
+        box.innerHTML = "";
+
+        const entries = Object.entries(eventTypes).sort((a, b) => b[1] - a[1]);
+
+        if (!entries.length) {
+          box.innerHTML =
+            '<div style="padding:15px;color:#64748b;font-size:12px">No events yet.</div>';
+          return;
+        }
+
+        entries.forEach(([name, count]) => {
+          const row = document.createElement("div");
+          row.className = "event-row";
+          row.innerHTML = `<span>${escapeHtml(name)}</span><span class="event-count">${count}</span>`;
+          box.appendChild(row);
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function connectSocket() {
+        const input = $("serverUrl").value.trim();
+
+        if (socket) {
+          socket.disconnect();
+          socket = null;
+        }
+
+        const url = input || undefined;
+
+        log(`Connecting to ${url || "current origin"}...`, "blue");
+        setConnection(false, "Connecting...");
+
+        socket = io(url, {
+          transports: ["websocket", "polling"],
+          reconnection: true,
+          reconnectionAttempts: Infinity,
+          reconnectionDelay: 1000,
+        });
+
+        socket.on("connect", () => {
+          setConnection(true, "Connected");
+          log(`Connected • socket id: ${socket.id}`, "green");
+        });
+
+        socket.on("disconnect", (reason) => {
+          setConnection(false, "Disconnected");
+          log(`Disconnected • reason: ${reason}`, "red");
+        });
+
+        socket.on("connect_error", (error) => {
+          setConnection(false, "Connection Error");
+          log(`Connection error • ${error.message}`, "red");
+        });
+
+        // IMPORTANT:
+        // onAny() catches every Socket.IO event that reaches this dashboard.
+        socket.onAny((eventName, ...args) => {
+          const data = args.length === 1 ? args[0] : args;
+
+          log(`EVENT "${eventName}" received`, "green");
+          addMessage(eventName, data);
+        });
+      }
+
+      function clearMessages() {
+        $("messages").innerHTML = `
+      <div class="empty" id="emptyState">
+        <div>
+          <div class="empty-icon">🧹</div>
+          <strong>Message panel cleared</strong>
+          <div style="margin-top:7px;font-size:12px">
+            Waiting for the next Socket.IO event.
+          </div>
+        </div>
+      </div>
+    `;
+
+        totalMessages = 0;
+        eventTypes = {};
+
+        $("messageCount").textContent = "0";
+        $("eventCount").textContent = "0";
+        $("lastTime").textContent = "—";
+
+        renderEvents();
+        log("Message panel cleared.");
+      }
+
+      function togglePause() {
+        paused = !paused;
+        $("pauseBtn").textContent = paused ? "Resume" : "Pause";
+
+        if (!paused && messageQueue.length) {
+          const queue = [...messageQueue];
+          messageQueue = [];
+          queue.forEach((item) => addMessage(item.eventName, item.data));
+        }
+
+        log(
+          paused ? "Message rendering paused." : "Message rendering resumed.",
+          "blue",
+        );
+      }
+
+      // Change this only if you want the dashboard to automatically connect.
+      // Example:
+      // $("serverUrl").value = "https://your-backend.onrender.com";
+
+      window.addEventListener("load", () => {
+        log("Dashboard initialized.");
+        log("Enter your Socket.IO backend URL and press Connect.", "blue");
+      });
+    </script>
+  </body>
+</html>

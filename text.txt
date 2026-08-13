@@ -1,0 +1,15 @@
+components/
+│
+├── dashboard/
+│   ├── Header.js
+│   ├── RouteMonitor.js
+│   ├── JourneyCard.js
+│   ├── StatisticsGrid.js
+│   ├── ActivityCard.js
+│   ├── ContactSection.js
+│   ├── StatusBadge.js
+│   └── StatCard.js
+│
+├── BottomNav.js
+├── NotificationBell.js
+└── SideDrawer.js

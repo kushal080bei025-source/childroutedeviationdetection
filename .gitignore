@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# environment variables / secrets
+.env
+.env.*
+.env-*
+config/serviceAccountKey.json
+
+# runtime uploads & user content (not part of deployable code)
+uploads/
+public/profile-pictures/
+
+# logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# testing/debug scratch files
+testing/
