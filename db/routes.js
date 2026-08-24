@@ -56,6 +56,10 @@ const routeSchema = new mongoose.Schema(
 
     totalDistance: Number,
     estimatedDuration: Number,
+
+    // Recomputed from the device's live location (lastLocation) as it moves along the route
+    remainingDistance: Number,
+    estimatedRemainingDuration: Number,
   },
   {
     timestamps: true,

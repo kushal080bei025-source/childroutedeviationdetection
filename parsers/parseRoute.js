@@ -123,4 +123,4 @@ function findClosestPointOnRoute(currentLocation, route) {
 
   return closest;
 }
-module.exports = { ParseRoute };
+module.exports = { ParseRoute, findClosestPointOnRoute, totalRouteDistance };

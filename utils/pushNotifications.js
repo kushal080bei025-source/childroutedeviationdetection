@@ -118,7 +118,7 @@ const sendToUser = async (
     sendToTokens(tokens, { title, body, data }),
     notificationData,
   ]);
-  // Notification.create(notificationData);
+  Notification.create(notificationData);
 
   return { success: true, notification, ...pushResult };
 };

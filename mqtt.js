@@ -11,40 +11,41 @@ const {
   mqttAuth,
 } = require("./middleware/mqttMiddleware");
 
-const host = process.env.HIVEMQ_HOST;
-const port = process.env.HIVEMQ_PORT || 8883;
+// ---------------------------------------------------------------------------
+// SIM800L/ESP32 device connection via the free public HiveMQ test broker
+// (no account/credentials). This is now the single MQTT client used for both
+// app traffic (Notification, LocationUpdate, etc.) and the SIM800L device topics.
+// ---------------------------------------------------------------------------
+const SIM800L_BROKER_URL = "mqtt://broker.hivemq.com:1883";
+// Must match the topics used in the ESP32 sketch
 
-const mqttUrl = `mqtts://${host}:${port}?clientId=childtracker_${Math.random().toString(16).slice(3)}`;
-
-const client = mqtt.connect(mqttUrl, {
-  username: process.env.HIVEMQ_USERNAME,
-  password: process.env.HIVEMQ_PASSWORD,
-
-  // HiveMQ Cloud uses TLS
-  protocol: "mqtts",
-
-  reconnectPeriod: 5000,
+const sim800lClient = mqtt.connect(SIM800L_BROKER_URL, {
+  clientId:
+    "nodejs-backend-051199c9b9c441f2b7bb3dac14eeeb6f-" +
+    Math.random().toString(16).slice(2, 8),
+  clean: true,
+  keepalive: 60,
+  reconnectPeriod: 3000, // retry every 3s if disconnected
 });
 
-client.on("connect", () => {
-  console.log("Connected to HiveMQ");
-
-  //frontend should receive FetchMapDataResponse, LoginResponse,LocationUpdateResponse
-
-  client.subscribe(
+sim800lClient.on("connect", () => {
+  console.log(`Connected to broker: ${SIM800L_BROKER_URL}`);
+  sim800lClient.subscribe(
     [
-      "Notification",
-      "RouteDeviationDetection",
-      "LocationUpdate",
-      "FetchMapData",
-      "Login",
+      "Notification_051199c9b9c441f2b7bb3dac14eeeb6f",
+      "RouteDeviationDetection_051199c9b9c441f2b7bb3dac14eeeb6f",
+      "LocationUpdate_051199c9b9c441f2b7bb3dac14eeeb6f",
+      "FetchMapData_051199c9b9c441f2b7bb3dac14eeeb6f",
+      "Login_051199c9b9c441f2b7bb3dac14eeeb6f",
+      "TestMessage_051199c9b9c441f2b7bb3dac14eeeb6f",
     ],
-    { qos: 0 },
     (err) => {
       if (err) {
-        console.error("MQTT subscription failed:", err);
+        console.error("Subscribe failed:", err.message);
       } else {
-        console.log("Subscribed to RouteDeviationDetection");
+        console.log(
+          `Subscribed to: Notification_051199c9b9c441f2b7bb3dac14eeeb6f, RouteDeviationDetection_051199c9b9c441f2b7bb3dac14eeeb6f, LocationUpdate_051199c9b9c441f2b7bb3dac14eeeb6f, FetchMapData_051199c9b9c441f2b7bb3dac14eeeb6f, Login_051199c9b9c441f2b7bb3dac14eeeb6f, TestMessage_051199c9b9c441f2b7bb3dac14eeeb6f`,
+        );
       }
     },
   );
@@ -59,53 +60,57 @@ const mqttPipeline = composeMqttMiddleware([
   mqttAuth,
   async (ctx) => {
     if (!ctx.dbUser) {
-      if (ctx.topic !== "Login") {
-        console.warn(
-          "MQTT message received from unauthenticated user:",
-          ctx.topic,
-        );
+      if (ctx.topic !== "Login_051199c9b9c441f2b7bb3dac14eeeb6f") {
+        console.warn("MQTT message received from unauthenticated user:", ctx);
       } else {
         console.log("Login message received:", ctx.data);
         const result = await mqttLogin(ctx.data);
-        client.publish("LoginResponse", JSON.stringify(result));
+        sim800lClient.publish(
+          "LoginResponse_051199c9b9c441f2b7bb3dac14eeeb6f",
+          JSON.stringify(result),
+        );
+        console.log("LoginResponse sent:", result);
       }
       return;
     }
     const { topic, data, dbUser } = ctx;
     switch (topic) {
-      case "Notification":
+      case "Notification_051199c9b9c441f2b7bb3dac14eeeb6f":
         sendNotification(dbUser._id, "route_deviated", global.io);
         console.log("Notification received:", data);
         break;
-      case "RouteDeviationDetection":
+      case "RouteDeviationDetection_051199c9b9c441f2b7bb3dac14eeeb6f":
         console.log("Route Deviation Detection received:", data);
         break;
-      case "LocationUpdate":
+      case "LocationUpdate_051199c9b9c441f2b7bb3dac14eeeb6f":
         console.log("Location Update received:", data);
-        await onLiveGpsData(ctx, client);
+        await onLiveGpsData(ctx, sim800lClient);
         break;
-      case "FetchMapData":
+      case "FetchMapData_051199c9b9c441f2b7bb3dac14eeeb6f":
         console.log("Fetch Map Data received:", data);
-        await fetchRoute(ctx, client);
+        await fetchRoute(ctx, sim800lClient);
         break;
       default:
         console.warn("Unknown topic:", topic);
+        break;
     }
   },
 ]);
 
-function handleMqttMessage(topic, message) {
-  mqttPipeline({ topic, raw: message, data: null, io: global.io });
-}
+sim800lClient.on("message", (topic, message) => {
+  // SIM800L device data topic is handled directly; everything else goes through the app middleware pipeline
 
-client.on("message", handleMqttMessage);
-
-client.on("error", (error) => {
-  console.error("MQTT Error:", error.message);
+  mqttPipeline({ topic, raw: message });
 });
 
-client.on("reconnect", () => {
-  console.log("Reconnecting to HiveMQ...");
+sim800lClient.on("error", (err) => {
+  console.error("MQTT Error:", err.message);
 });
 
-module.exports = client;
+sim800lClient.on("reconnect", () => {
+  console.log("Reconnecting to broker.hivemq.com...");
+});
+
+// Demo: ping the device 10 seconds after startup
+
+// module.exports = sim800lClient;

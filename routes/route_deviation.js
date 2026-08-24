@@ -205,6 +205,7 @@ router.post("/getCurrentRoute", async (req, res) => {
     console.log(device, "device");
     return res.status(200).json({
       success: true,
+      currentDeviceLocation: currentDevice.device.lastLocation,
       route: route,
     });
   } catch (err) {

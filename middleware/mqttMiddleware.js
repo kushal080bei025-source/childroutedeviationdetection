@@ -50,12 +50,13 @@ const mqttErrorHandler = (handler) => async (ctx, next) => {
   }
 };
 
-// expects ctx.data.authorization === "Bearer <accessToken>", sets ctx.user (jwt payload) and ctx.dbUser (real user)
+// expects ctx.data.accessToken (or ctx.data.authorization === "Bearer <accessToken>"), sets ctx.user (jwt payload) and ctx.dbUser (real user)
 const mqttAuth = async (ctx, next) => {
-  const token = ctx.data?.authorization?.split(" ")[1];
+  const token = ctx.data?.accessToken || ctx.data?.authorization?.split(" ")[1];
 
   if (token) {
     delete ctx.data.authorization; // remove token from data for security
+    delete ctx.data.accessToken;
     try {
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
       ctx.user = decoded;

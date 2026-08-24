@@ -34,7 +34,10 @@ async function fetchRoute(ctx, client) {
       await route.save();
     }
 
-    client.publish("FetchMapDataResponse", pkg.packet);
+    client.publish(
+      "FetchMapDataResponse_051199c9b9c441f2b7bb3dac14eeeb6f",
+      pkg.packet,
+    );
     console.log(
       "FetchMapData: published route packet,",
       pkg.segments.length,

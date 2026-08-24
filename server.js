@@ -37,6 +37,7 @@ const {
 } = require("./controllers/profileController");
 
 const { onLiveData, sendNotification } = require("./socketIo");
+const { startDeviceOfflineMonitor } = require("./utils/deviceOfflineMonitor");
 
 const app = express();
 const server = http.createServer(app);
@@ -203,7 +204,7 @@ const io = new Server(server, {
 // expose io globally so modules like mqtt.js can use it without circular imports
 global.io = io;
 
-io.use(socketAuth);
+// io.use(socketAuth);
 
 app.post("/livedata", async (req, res) => {
   try {
@@ -242,22 +243,6 @@ io.on("connection", (socket) => {
     socket.emit("test-response", { status: "ok", received: data });
   });
 
-  socket.on(
-    "continuousMessage",
-    socketAuthenticate((socket, message) => {
-      try {
-        console.log("got", message.data);
-      } catch (error) {
-        console.error("Error processing message:", error.message);
-        socket.emit("messageReceived", {
-          success: false,
-          messageId: message?.id,
-          error: error.message,
-        });
-      }
-    }),
-  );
-
   socket.on("ping", () => {
     socket.emit("pong");
   });
@@ -275,6 +260,8 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected");
+
+    startDeviceOfflineMonitor();
 
     server.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);

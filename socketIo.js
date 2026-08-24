@@ -1,5 +1,7 @@
 const UserCurrentDevice = require("./db/user_current_device.js");
 const Route = require("./db/routes.js");
+const Device = require("./db/deviceinfo.js");
+const { updateRouteProgress } = require("./utils/routeProgress.js");
 
 const { sendToUser } = require("./utils/pushNotifications");
 
@@ -23,7 +25,7 @@ const sendNotification = async (
 };
 
 const onLiveData = async (io, user, data) => {
-  const { latitude, longitude, transmitid } = data;
+  const { latitude, longitude, transmitid, speed, accuracy } = data;
 
   const currentDevice = await UserCurrentDevice.findOne({
     user: user._id,
@@ -32,6 +34,30 @@ const onLiveData = async (io, user, data) => {
     .lean();
   let route = await Route.findOne({ device: currentDevice.device._id });
   console.log("GPS:", latitude, longitude, transmitid, route?.isUpdated);
+
+  // GPS received: refresh lastSeenAt/lastLocation (velocity comes from the device's reported speed) and clear a stale "offline" status
+  await Device.updateOne(
+    { _id: currentDevice.device._id },
+    {
+      $set: {
+        lastSeenAt: new Date(),
+        status: "active",
+        lastLocation: {
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+          accuracy: accuracy !== undefined ? parseFloat(accuracy) : undefined,
+          speed: speed !== undefined ? parseFloat(speed) : undefined,
+          updatedAt: new Date(),
+        },
+      },
+    },
+  );
+
+  await updateRouteProgress(currentDevice.device._id, {
+    latitude: parseFloat(latitude),
+    longitude: parseFloat(longitude),
+  });
+
   if (io && io.sockets && io.sockets.sockets) {
     const sockets = io.sockets.sockets;
     console.log(sockets.size, "connected clients");
