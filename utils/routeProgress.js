@@ -30,10 +30,22 @@ async function updateRouteProgress(deviceId, currentLocation, averageSpeed) {
     ...route.points.slice(closest.nextIndex),
   ]);
 
+  const thresholdSpeed = parseFloat(process.env.thresholdSpeed) || 1.4; // fallback to 1.4 m/s (5 km/h) if no average speed is available
   const estimatedRemainingDuration =
     averageSpeed > 0
       ? remainingDistance / averageSpeed
-      : remainingDistance / process.env.thresholdSpeed; // fallback to 1.4 m/s (5 km/h) if no average speed is available
+      : remainingDistance / thresholdSpeed;
+
+  // Validate values before saving
+  if (!isFinite(remainingDistance) || !isFinite(estimatedRemainingDuration)) {
+    console.warn("Invalid route progress values - skipping save", {
+      remainingDistance,
+      estimatedRemainingDuration,
+      averageSpeed,
+    });
+    return;
+  }
+
   route.remainingDistance = remainingDistance;
   route.estimatedRemainingDuration = estimatedRemainingDuration;
   await route.save();
