@@ -5,20 +5,17 @@ const jwt = require("jsonwebtoken");
 
 const verifyUser = async (req, res, next) => {
   try {
-    if (!req.headers.origin) {
+    // Check if this is a React Native/ESP32 request (has Authorization header with Bearer token)
+    const hasAuthHeader = req.headers.authorization?.startsWith("Bearer ");
+
+    if (hasAuthHeader && !req.headers.origin) {
       await React_Native_Request(req, res, next);
       return;
     }
-    if (process.env.IS_WEP_NATIVE) {
-      // if (req.session.userId) {
-      req.uid = "decoded.uid";
-      req.user = {};
-      next();
-      return;
-      // }
-    }
-    const sessionCookie = req.cookies.session;
 
+    // Browser request - check for Firebase session cookie
+    const sessionCookie = req.cookies.session;
+    console.log("Session Cookie:", sessionCookie);
     if (!sessionCookie) {
       next();
       return;

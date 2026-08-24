@@ -10,6 +10,7 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../utils/tokens");
+const UserCurrentDevice = require("../db/user_current_device.js");
 
 const { refreshToken } = require("./refreshToken");
 const validatePassword = (password, userData) => {
@@ -66,7 +67,7 @@ const login = async (req, res) => {
       fromEsp32 = true;
     }
     console.log(req.body);
-    const { deviceId, platform, fcmToken, location } = req.body;
+    const { platform, fcmToken, location } = req.body;
     // Check if email and password are provided
     if (!email || !password) {
       return res.status(400).json({
@@ -105,10 +106,13 @@ const login = async (req, res) => {
       typeof fcmToken === "string" &&
       fcmToken.trim().length > 0 &&
       !fcmToken.startsWith("ExponentPushToken");
-    const hasValidDeviceInfo = Boolean(deviceId && platform && isValidFcmToken);
 
-    const existingDevice = deviceId
-      ? user.devices.find((d) => d.deviceId === deviceId)
+    const hasValidDeviceInfo = Boolean(
+      req.body.deviceId && platform && isValidFcmToken,
+    );
+
+    const existingDevice = req.body.deviceId
+      ? user.devices.find((d) => d.deviceId === req.body.deviceId)
       : null;
     console.log(
       "Existing Device:",
@@ -127,7 +131,7 @@ const login = async (req, res) => {
       }
     } else if (!fromEsp32 && hasValidDeviceInfo) {
       user.devices.push({
-        deviceId,
+        deviceId: req.body.deviceId,
         platform,
         fcmToken,
         lastActive: new Date(),
@@ -138,14 +142,42 @@ const login = async (req, res) => {
       );
     }
 
-    user.location = {
-      lat: location.lat,
-      lng: location.lng,
-      updatedAt: new Date(),
-    };
-    // console.log(user)
+    // Update location only if provided
+    if (location && location.lat && location.lng) {
+      user.location = {
+        lat: location.lat,
+        lng: location.lng,
+        updatedAt: new Date(),
+      };
+    }
+
+    // Handle browser-based login requests (requests without Authorization Bearer token)
+    const isBrowserRequest = !req.headers.authorization?.startsWith("Bearer ");
+
+    if (isBrowserRequest) {
+      // Set session for browser requests
+      req.session.userId = user._id.toString();
+      req.session.email = user.email;
+      req.session.name = user.name;
+      req.session.deviceId = req.body.deviceId;
+
+      console.log("Browser login - Setting session for:", user.email);
+
+      // Save session before responding
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log("Session saved successfully");
+            resolve();
+          }
+        });
+      });
+    }
+
     await user.save();
-    console.log(user.devices);
     return res.status(200).json({
       success: true,
       accessToken,
@@ -387,7 +419,9 @@ const register = async (req, res) => {
 const updateDevice = async (req, res) => {
   try {
     // console.log(req.user)
-    if (!req.headers.origin && process.env.IS_WEP_NATIVE_TESTING) {
+    const hasAuthHeader = req.headers.authorization?.startsWith("Bearer ");
+
+    if (!hasAuthHeader && process.env.IS_WEP_NATIVE_TESTING) {
       return res.json({
         success: true,
       });
@@ -452,6 +486,20 @@ const Logout = async (req, res) => {
         },
       },
     );
+
+    // Destroy session for browser requests
+    const isBrowserRequest = !req.headers.authorization?.startsWith("Bearer ");
+
+    if (isBrowserRequest && req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destruction error:", err);
+        } else {
+          console.log("Session destroyed for user:", userId);
+        }
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Logged out successfully",

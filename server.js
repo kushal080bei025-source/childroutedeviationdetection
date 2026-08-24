@@ -49,7 +49,9 @@ if (process.env.NODE_ENV === "production") {
 
 const allowedOrigins = [
   "http://localhost:8081",
-  "http://localhost:5173",
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  process.env.BACKEND_HOST,
+  "http://localhost:3000",
   "https://snack-runtime.eascdn.net",
 ];
 
@@ -138,9 +140,6 @@ app.post("/sim800/livedata", (req, res) => {
     received: req.body,
   });
 });
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "view", "index.html"));
-});
 
 app.post("/login", login);
 app.post("/register", register);
@@ -149,6 +148,20 @@ app.post("/refreshtoken", refreshToken);
 
 app.use(verifyUser);
 app.use(authMiddleware);
+
+app.get("/", (req, res) => {
+  if (!req.dbUser) {
+    return res.redirect("/login");
+  }
+  res.sendFile(path.join(__dirname, "public", "view", "index.html"));
+});
+app.get("/login", (req, res) => {
+  if (req.dbUser) {
+    return res.redirect("/");
+  }
+  res.sendFile(path.join(__dirname, "public", "view", "login.html"));
+});
+
 app.post("/auth", CheckAuthorization);
 app.use("/admin", require("./routes/admin-routes"));
 app.use("", require("./routes/devices"));
