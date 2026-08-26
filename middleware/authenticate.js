@@ -13,12 +13,12 @@ const authMiddleware = async (req, res, next) => {
     }
 
     if (!hasAuthHeader && process.env.IS_WEP_NATIVE_TESTING) {
-      const users = await User.find();
-      const user = users[0];
+      // const users = await User.find();
+      // const user = users[0];
 
-      if (user) {
-        req.dbUser = user;
-      }
+      // if (user) {
+      //   req.dbUser = user;
+      // }
       return next();
     }
 
