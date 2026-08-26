@@ -173,6 +173,7 @@ router.post("/getCurrentRoute", async (req, res) => {
     // console.log(devices)
 
     const user = await User.findOne({ uid: req.dbUser.uid });
+    const devices = await Device.find({ purchaser: user._id });
     let currentDevice = await UserCurrentDevice.findOne({
       user: user._id,
     })

@@ -155,6 +155,9 @@ app.get("/", (req, res) => {
   }
   res.sendFile(path.join(__dirname, "public", "view", "index.html"));
 });
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "favicon.ico"));
+});
 app.get("/login", (req, res) => {
   if (req.dbUser) {
     return res.redirect("/");
@@ -245,6 +248,11 @@ app.post("/livedata", async (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("\nUser Connected:", socket.id);
+  socket.emit("location-update", {
+    latitude: 27.69403,
+    longitude: 85.31883,
+    transmitid: 90,
+  });
   console.log(
     "Transport:",
     socket.handshake.headers["user-agent"]?.substring(0, 50),

@@ -3,6 +3,7 @@ const { sendNotification } = require("./SocketConsumer");
 const { mqttLogin } = require("./controllers/authController");
 const { fetchRoute } = require("./routes/mqtt_route_deviation");
 const { onLiveGpsData } = require("./routes/on_live_gps_data");
+const { fetchEmergencyContacts } = require("./routes/mqtt_emergency_contacts");
 const {
   composeMqttMiddleware,
   mqttLogger,
@@ -38,13 +39,14 @@ sim800lClient.on("connect", () => {
       "FetchMapData_051199c9b9c441f2b7bb3dac14eeeb6f",
       "Login_051199c9b9c441f2b7bb3dac14eeeb6f",
       "TestMessage_051199c9b9c441f2b7bb3dac14eeeb6f",
+      "SendEmergencyContacts_051199c9b9c441f2b7bb3dac14eeeb6f",
     ],
     (err) => {
       if (err) {
         console.error("Subscribe failed:", err.message);
       } else {
         console.log(
-          `Subscribed to: Notification_051199c9b9c441f2b7bb3dac14eeeb6f, RouteDeviationDetection_051199c9b9c441f2b7bb3dac14eeeb6f, LocationUpdate_051199c9b9c441f2b7bb3dac14eeeb6f, FetchMapData_051199c9b9c441f2b7bb3dac14eeeb6f, Login_051199c9b9c441f2b7bb3dac14eeeb6f, TestMessage_051199c9b9c441f2b7bb3dac14eeeb6f`,
+          `Subscribed to: Notification_051199c9b9c441f2b7bb3dac14eeeb6f, RouteDeviationDetection_051199c9b9c441f2b7bb3dac14eeeb6f, LocationUpdate_051199c9b9c441f2b7bb3dac14eeeb6f, FetchMapData_051199c9b9c441f2b7bb3dac14eeeb6f, Login_051199c9b9c441f2b7bb3dac14eeeb6f, TestMessage_051199c9b9c441f2b7bb3dac14eeeb6f,SendEmergencyContacts_051199c9b9c441f2b7bb3dac14eeeb6f `,
         );
       }
     },
@@ -89,6 +91,13 @@ const mqttPipeline = composeMqttMiddleware([
       case "FetchMapData_051199c9b9c441f2b7bb3dac14eeeb6f":
         console.log("Fetch Map Data received:", data);
         await fetchRoute(ctx, sim800lClient);
+        break;
+      case "SendEmergencyContacts_051199c9b9c441f2b7bb3dac14eeeb6f":
+        console.log("Emergency Contacts Request received:", data);
+        await fetchEmergencyContacts(ctx, sim800lClient);
+        break;
+      case "TestMessage_051199c9b9c441f2b7bb3dac14eeeb6f":
+        console.log("Test Message received:", data);
         break;
       default:
         console.warn("Unknown topic:", topic);

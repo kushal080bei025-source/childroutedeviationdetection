@@ -35,6 +35,7 @@ const sendToTokens = async (tokens, { title, body, data = {} } = {}) => {
   const response = await admin.messaging().sendEachForMulticast({
     tokens: uniqueTokens,
     notification: { title, body },
+    icon: "./favicon.ico",
     data: stringifyData(data),
   });
 

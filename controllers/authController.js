@@ -472,6 +472,7 @@ const updateDevice = async (req, res) => {
 
 const Logout = async (req, res) => {
   try {
+    console.log("Logging out user:", req.dbUser.email);
     const userId = req.dbUser.id;
     const { deviceId } = req.body;
 
