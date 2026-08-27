@@ -35,7 +35,7 @@ const sendToTokens = async (tokens, { title, body, data = {} } = {}) => {
   const response = await admin.messaging().sendEachForMulticast({
     tokens: uniqueTokens,
     notification: { title, body },
-    icon: "./favicon.ico",
+    // icon: "./favicon.ico",
     data: stringifyData(data),
   });
 
@@ -119,7 +119,7 @@ const sendToUser = async (
     sendToTokens(tokens, { title, body, data }),
     notificationData,
   ]);
-  Notification.create(notificationData);
+  // Notification.create(notificationData);
 
   return { success: true, notification, ...pushResult };
 };
