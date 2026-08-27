@@ -220,7 +220,7 @@ const mqttLogin = async ({ email, password, location }) => {
     const refreshToken = generateRefreshToken(user);
     user.refreshToken = refreshToken;
 
-    if (location) {
+    if (location && location.lat && location.lng) {
       user.location = {
         lat: location.lat,
         lng: location.lng,
