@@ -164,6 +164,9 @@ app.get("/login", (req, res) => {
   }
   res.sendFile(path.join(__dirname, "public", "view", "login.html"));
 });
+app.get("/testing", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "view", "testing.html"));
+});
 
 app.post("/auth", CheckAuthorization);
 app.use("/admin", require("./routes/admin-routes"));

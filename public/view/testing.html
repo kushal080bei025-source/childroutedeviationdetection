@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Route Deviation Alert</title>
+  </head>
+
+  <body>
+    <script>
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          const message = `Dear Mr. Nabin,
+
+Your child has deviated from the predefined route.
+
+Please check their current location:
+routedeviationdetection://Map/LiveTracking?q=${lat.toFixed(6)},${lon.toFixed(6)}`;
+
+          console.log(message);
+
+          // Display message on page
+          document.body.innerText = message;
+        },
+
+        function (error) {
+          console.error("Location permission denied or unavailable.", error);
+          document.body.innerText =
+            "Unable to get your current location. Please allow location permission.";
+        },
+      );
+    </script>
+  </body>
+</html>
