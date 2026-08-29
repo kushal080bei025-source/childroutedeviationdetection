@@ -1,5 +1,5 @@
 const User = require("../db/User");
-const EmergencyContact = require("../db/EmergencyContact");
+const EmergencyContact = require("../db/contacts.js");
 
 /**
  * Handle MQTT request for emergency contacts
