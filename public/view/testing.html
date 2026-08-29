@@ -9,27 +9,28 @@
   <body>
     <script>
       navigator.geolocation.getCurrentPosition(
-        function (position) {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
+        (position) => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lon = position.coords.longitude.toFixed(6);
 
-          const message = `Dear Mr. Nabin,
+          const smsMessage = `Attention: Mr. Nabin,
+
+ROUTE DEVIATION ALERT
 
 Your child has deviated from the predefined route.
 
 Please check their current location:
-routedeviationdetection://Map/LiveTracking?q=${lat.toFixed(6)},${lon.toFixed(6)}`;
+https://yourdomain.com/live-location?lat=${lat}&lon=${lon}
 
-          console.log(message);
+- Child Safety & Route Deviation Detection System`;
 
-          // Display message on page
-          document.body.innerText = message;
+          console.log(smsMessage);
         },
-
-        function (error) {
-          console.error("Location permission denied or unavailable.", error);
-          document.body.innerText =
-            "Unable to get your current location. Please allow location permission.";
+        (error) => {
+          console.error("Unable to get location:", error);
+        },
+        {
+          enableHighAccuracy: true,
         },
       );
     </script>
