@@ -13,6 +13,8 @@
           const lat = position.coords.latitude.toFixed(6);
           const lon = position.coords.longitude.toFixed(6);
 
+          const mapsLink = `https://www.google.com/maps?q=${lat},${lon}`;
+
           const smsMessage = `Attention: Mr. Nabin,
 
 ROUTE DEVIATION ALERT
@@ -20,11 +22,13 @@ ROUTE DEVIATION ALERT
 Your child has deviated from the predefined route.
 
 Please check their current location:
-https://yourdomain.com/live-location?lat=${lat}&lon=${lon}
+${mapsLink}
 
 - Child Safety & Route Deviation Detection System`;
 
           console.log(smsMessage);
+
+          // You can send smsMessage to your backend/API
         },
         (error) => {
           console.error("Unable to get location:", error);
