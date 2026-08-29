@@ -194,6 +194,7 @@ app.post("/sendNotification", async (req, res) => {
     }
 
     const { notification_type } = req.body;
+    console.log("Notification type:", notification_type);
     await sendNotification(notification_type, req, res, io);
   } catch (error) {
     console.error("Error sending notification:", error.message);
