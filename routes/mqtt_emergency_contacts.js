@@ -1,4 +1,5 @@
 const User = require("../db/User");
+const EmergencyContact = require("../db/EmergencyContact");
 
 /**
  * Handle MQTT request for emergency contacts
@@ -30,7 +31,12 @@ async function fetchEmergencyContacts(ctx, mqttClient) {
     }
 
     // Check if user has emergency contacts
-    const contacts = user.emergencyContacts || [];
+    const contacts = await EmergencyContact.find({
+      userId: dbUser._id,
+    }).sort({
+      isPrimary: -1,
+      createdAt: -1,
+    });
 
     console.log(
       `Found ${contacts.length} emergency contacts for user ${dbUser.email}`,
