@@ -4,18 +4,68 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Route Deviation Alert</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+
+      .message-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      #message {
+        white-space: pre-wrap;
+        font-size: 16px;
+        line-height: 1.6;
+        padding: 15px;
+        background: #f8f8f8;
+        border-radius: 8px;
+      }
+
+      button {
+        margin-top: 15px;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        background: #2563eb;
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #1d4ed8;
+      }
+    </style>
   </head>
 
   <body>
+    <div class="message-container">
+      <div id="message">Getting your current location...</div>
+
+      <button id="copyButton" onclick="copyMessage()" style="display: none">
+        Copy Message
+      </button>
+    </div>
+
     <script>
+      let smsMessage = "";
+
+      let mapsLink = `routedeviationdetection://Map/Livetracking?q`;
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude.toFixed(6);
           const lon = position.coords.longitude.toFixed(6);
-
-          const mapsLink = `routedeviationdetection://Map/Livetracking?q=${lat},${lon}`;
-
-          const smsMessage = `Attention: Mr. Nabin,
+          mapsLink = `routedeviationdetection://Map/Livetracking?q=${lat},${lon}`;
+          smsMessage = `Attention: Mr. Nabin,
 
 ROUTE DEVIATION ALERT
 
@@ -24,17 +74,43 @@ Your child has deviated from the predefined route.
 Please check their current location:
 ${mapsLink}`;
 
-          document.body.innerText = smsMessage;
-
-          // You can send smsMessage to your backend/API
+          document.getElementById("message").innerText = smsMessage;
+          document.getElementById("copyButton").style.display = "block";
         },
+
         (error) => {
           console.error("Unable to get location:", error);
+
+          document.getElementById("message").innerText =
+            "Unable to get your current location.";
         },
+
         {
           enableHighAccuracy: true,
         },
       );
+
+      function copyMessage() {
+        navigator.clipboard
+          .writeText(
+            `Your child has deviated from the predefined route.
+
+Please check their current location:
+${mapsLink}`,
+          )
+          .then(() => {
+            const button = document.getElementById("copyButton");
+
+            button.innerText = "✓ Message Copied";
+
+            setTimeout(() => {
+              button.innerText = "Copy Message";
+            }, 2000);
+          })
+          .catch((error) => {
+            console.error("Copy failed:", error);
+          });
+      }
     </script>
   </body>
 </html>
