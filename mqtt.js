@@ -40,6 +40,7 @@ sim800lClient.on("connect", () => {
       "Login_051199c9b9c441f2b7bb3dac14eeeb6f",
       "TestMessage_051199c9b9c441f2b7bb3dac14eeeb6f",
       "SendEmergencyContacts_051199c9b9c441f2b7bb3dac14eeeb6f",
+      "MPUsensorstate_051199c9b9c441f2b7bb3dac14eeeb6f",
     ],
     (err) => {
       if (err) {
@@ -78,8 +79,13 @@ const mqttPipeline = composeMqttMiddleware([
     const { topic, data, dbUser } = ctx;
     switch (topic) {
       case "Notification_051199c9b9c441f2b7bb3dac14eeeb6f":
-        sendNotification(dbUser._id, "route_deviated", global.io);
+        sendNotification(dbUser._id, data.notification_type, global.io);
         console.log("Notification received:", data);
+        break;
+      case "MPUsensorstate_051199c9b9c441f2b7bb3dac14eeeb6f":
+        console.log("MPUsensorstate received:", data);
+        const stateExplanation = getStateExplanation(data.state);
+        console.log("State explanation:", stateExplanation);
         break;
       case "RouteDeviationDetection_051199c9b9c441f2b7bb3dac14eeeb6f":
         console.log("Route Deviation Detection received:", data);
@@ -123,3 +129,25 @@ sim800lClient.on("reconnect", () => {
 // Demo: ping the device 10 seconds after startup
 
 // module.exports = sim800lClient;
+
+function getStateExplanation(state) {
+  switch (state) {
+    case 0:
+      return "Normal activity detected. No fall-related abnormal movement is observed.";
+
+    case 1:
+      return "Low acceleration detected, indicating a possible sudden downward movement.";
+
+    case 2:
+      return "Significant rotation detected, indicating a possible loss of balance.";
+
+    case 3:
+      return "Post-fall stillness detected. The person remains relatively motionless after abnormal movement.";
+
+    case 4:
+      return "Fall confirmed. An emergency notification should be triggered.";
+
+    default:
+      return "Unknown state.";
+  }
+}
